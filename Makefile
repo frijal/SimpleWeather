@@ -77,22 +77,19 @@ clean:
 	printf -- 'NEEDED: npm\n'
 	npm install
 
+# Restore build metadata even when tsc ran outside make.
 ts: $(BUILD)/extension.js
-
-# Build files with tsc
-# Also inserts "const authors=FILE" into resources.js
-$(BUILD)/extension.js $(BUILD)/resource.js: $(SRCS) $(AUTHORS) ./node_modules/.package-lock.json
-	printf -- 'NEEDED: tsc\n'
-	tsc
-	@touch $(BUILD)/extension.js
-
 	@if ! grep -q '// Inserted' $(RESJS); then \
 		printf '\n// Inserted\n\n' >> $(RESJS); \
 		$(call jsvarfile,authors,$(AUTHORS)) >> $(RESJS); \
 		$(call jsvar,gitHash,$(GITHASH)) >> $(RESJS); \
-	else \
-		touch $(BUILD)/resource.js; \
 	fi
+
+# Build files with tsc
+$(BUILD)/extension.js $(BUILD)/resource.js: $(SRCS) $(AUTHORS) ./node_modules/.package-lock.json
+	printf -- 'NEEDED: tsc\n'
+	tsc
+	@touch $(BUILD)/extension.js
 
 $(SCHEMAOUT): $(SCHEMASRC)
 	printf -- 'NEEDED: glib-compile-schemas\n'

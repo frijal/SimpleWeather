@@ -20,7 +20,7 @@
   "type": "module",
   "main": "dist/build/extension.ts",
   "scripts": {
-    "test": "tsc --incremental false && node --test tests/*.test.ts"
+    "test": "tsc --incremental false && make ts && node --test tests/*.test.ts"
   },
   "devDependencies": {
     "eslint": "^9.28.0",
