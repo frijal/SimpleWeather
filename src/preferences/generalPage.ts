@@ -226,10 +226,16 @@ export class GeneralPage extends Adw.PreferencesPage {
 
         const isQWeatherSelected = () =>
             WeatherProviderApiKeys[wProvRow.selected] === "QWeather";
-        const validateCredentialsRow = new Adw.ButtonRow({
+        const validateCredentialsRow = new Adw.ActionRow({
             title: _g("Validate Credentials"),
             visible: isQWeatherSelected()
         });
+        const validateCredentialsButton = new Gtk.Button({
+            label: _g("Validate"),
+            valign: Gtk.Align.CENTER
+        });
+        validateCredentialsRow.add_suffix(validateCredentialsButton);
+        validateCredentialsRow.set_activatable_widget(validateCredentialsButton);
         weatherServiceGroup.add(validateCredentialsRow);
 
         const updateValidateCredentialsRow = () => {
@@ -252,7 +258,7 @@ export class GeneralPage extends Adw.PreferencesPage {
             updateValidateCredentialsRow();
         });
 
-        validateCredentialsRow.connect("activated", () => {
+        validateCredentialsButton.connect("clicked", () => {
             const i = wProvRow.selected;
             const key = this.#getApiKey(settings, i);
             const host = this.#getApiHost(settings, i);
