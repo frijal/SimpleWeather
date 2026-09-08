@@ -1,4 +1,11 @@
 
+# v51.0.1
+
+## Bug Fixes
+
+- Fix Preferences menu crash on GNOME 46
+- Fix crash that could happen on specific builds where npm test was run without Make first
+
 # v51.0.0
 
 ## Features
