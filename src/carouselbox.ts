@@ -18,6 +18,7 @@
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
+import { boxOrientation } from "./clutterutils.js";
 import { theme } from "./theme.js";
 
 export class CarouselBox extends St.BoxLayout {
@@ -39,7 +40,7 @@ export class CarouselBox extends St.BoxLayout {
             x_expand: true,
             y_expand: false,
             ...a,
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             reactive: true,
             style_class: (a.style_class ?? "") + " sw-carousel"
         })

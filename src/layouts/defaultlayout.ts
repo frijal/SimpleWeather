@@ -25,7 +25,7 @@ import { displayDayOfWeek, displayTime } from "../lang.js";
 import { theme } from "../theme.js";
 import { Forecast, Weather } from "../weather.js";
 import { CarouselBox } from "../carouselbox.js";
-import { setPointer } from "../clutterutils.js";
+import { boxOrientation, setPointer } from "../clutterutils.js";
 import { createWeatherIcon } from "./icons.js";
 import type { PopupLayout, PopupLayoutArgs } from "./layout.js";
 import { getDayOfWeekDate } from "../utils.js";
@@ -66,7 +66,11 @@ function addChildren(parent : Clutter.Actor, ...children : Clutter.Actor[]) {
 }
 
 function createForecastCard() : ForecastCard {
-    const card = new St.BoxLayout({ vertical: true, x_expand: true, y_expand: true });
+    const card = new St.BoxLayout({
+        ...boxOrientation(Clutter.Orientation.VERTICAL),
+        x_expand: true,
+        y_expand: true
+    });
     const day = new St.Label({ text: "", x_align: Clutter.ActorAlign.CENTER });
     const icon = new St.Icon({
         icon_name: "",
@@ -158,7 +162,7 @@ export class DefaultLayout implements PopupLayout {
 
     constructor(args : PopupLayoutArgs) {
         this.#args = args;
-        this.actor = new St.BoxLayout({ vertical: false });
+        this.actor = new St.BoxLayout(boxOrientation(Clutter.Orientation.HORIZONTAL));
 
         this.#condition = new St.Icon({
             icon_name: "weather-clear-symbolic",
@@ -172,14 +176,14 @@ export class DefaultLayout implements PopupLayout {
         });
 
         this.#current = new St.BoxLayout({
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             style_class: "simpleweather-current"
         });
         theme(this.#current, "left-box");
         addChildren(this.#current, this.#condition, this.#temp);
         this.actor.add_child(this.#current);
 
-        const right = new St.BoxLayout({ vertical: true });
+        const right = new St.BoxLayout(boxOrientation(Clutter.Orientation.VERTICAL));
         const forecasts = new St.BoxLayout({
             x_expand: true,
             y_expand: true,

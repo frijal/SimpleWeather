@@ -26,7 +26,7 @@ import {
     PopupLayout,
     createPopupLayout
 } from "./layouts/layout.js";
-import { setPointer } from "./clutterutils.js";
+import { boxOrientation, setPointer } from "./clutterutils.js";
 import { theme, themeInitAll } from "./theme.js";
 import { Weather } from "./weather.js";
 
@@ -75,7 +75,7 @@ export class Popup {
         theme(this.#layoutItem, "bg");
         this.#layoutItem.actor.add_child(this.#layout.actor);
 
-        const footer = new St.BoxLayout({ vertical: false });
+        const footer = new St.BoxLayout(boxOrientation(Clutter.Orientation.HORIZONTAL));
         this.#copyright = new St.Label({
             text: `${_g("Weather Data")} \u00A9 `,
             visible: false,

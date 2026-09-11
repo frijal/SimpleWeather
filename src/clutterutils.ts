@@ -17,6 +17,13 @@
 
 import Clutter from "gi://Clutter";
 import Meta from "gi://Meta";
+import St from "gi://St";
+
+export function boxOrientation(orientation : Clutter.Orientation) : Partial<St.BoxLayout.ConstructorProps> {
+    // St.BoxLayout gained orientation in GNOME 48; older shells need vertical.
+    if("orientation" in St.BoxLayout.prototype) return { orientation };
+    return { vertical: orientation === Clutter.Orientation.VERTICAL };
+}
 
 // Widget must have reactive and track_hover true.
 export function setPointer(widget : Clutter.Actor) : void {

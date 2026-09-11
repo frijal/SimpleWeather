@@ -18,6 +18,7 @@
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
+import { boxOrientation } from "../clutterutils.js";
 import { detailName, Details, displayDetail } from "../details.js";
 import { gettext as _g } from "../gettext.js";
 import { displayTime } from "../lang.js";
@@ -45,7 +46,7 @@ function usePrimaryTextColor(config : PopupLayoutArgs["config"], label : St.Labe
 
 function createForecastView(config : PopupLayoutArgs["config"]) {
     const actor = new St.BoxLayout({
-        vertical: true,
+        ...boxOrientation(Clutter.Orientation.VERTICAL),
         x_expand: true,
         x_align: Clutter.ActorAlign.CENTER,
         style_class: "sw-classic-hourly-item"
@@ -102,7 +103,7 @@ export class ClassicLayout implements PopupLayout {
     constructor(args : PopupLayoutArgs) {
         this.#args = args;
         this.actor = new St.BoxLayout({
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             x_expand: true,
             style_class: "sw-classic-layout"
         });
@@ -118,7 +119,7 @@ export class ClassicLayout implements PopupLayout {
         currentRow.add_child(this.#currentIcon);
 
         const summaryBox = new St.BoxLayout({
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
@@ -162,11 +163,11 @@ export class ClassicLayout implements PopupLayout {
             style_class: "sw-classic-detail-box"
         });
         const captions = new St.BoxLayout({
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             style_class: "sw-classic-detail-captions"
         });
         const values = new St.BoxLayout({
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             style_class: "sw-classic-detail-values"
         });
         this.#detailCaptions = [];

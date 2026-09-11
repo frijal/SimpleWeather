@@ -39,6 +39,7 @@ import { displayDetail } from "./details.js";
 import { theme, themeInitAll, themeRemoveAll } from "./theme.js";
 import { getWeatherGIcon } from "./icons.js";
 import { AutoConfigFailError, FriendlyError } from "./errors.js";
+import { boxOrientation } from "./clutterutils.js";
 
 const FAIL_RETRIES : number = 10;
 
@@ -156,9 +157,7 @@ export default class SimpleWeatherExtension extends Extension {
             refreshWeather: this.#updateWeatherAsync.bind(this)
         });
 
-        const layout = new St.BoxLayout({
-            vertical: false
-        });
+        const layout = new St.BoxLayout(boxOrientation(Clutter.Orientation.HORIZONTAL));
 
         const hasDetail1 = this.#config!.getPanelDetail() != null;
         const hasDetail2 = this.#config!.getSecondaryPanelDetail() !== null;
