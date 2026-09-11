@@ -6,7 +6,7 @@ multiple providers.
 
 [![GNOME Extensions](https://img.shields.io/badge/GNOME_Extensions-Install-4A86CF?logo=gnome&logoColor=white)](https://extensions.gnome.org/extension/8261/simpleweather/)
 [![Downloads](https://img.shields.io/gnome-extensions/dt/simple-weather%40romanlefler.com?logo=gnome&logoColor=white&label=Downloads)](https://extensions.gnome.org/extension/8261/simpleweather/)
-[![GNOME Shell](https://img.shields.io/badge/GNOME_Shell-46%20%7C%2048%20%7C%2049%20%7C%2050%20%7C%2051-4A86CF?logo=gnome&logoColor=white)](https://extensions.gnome.org/extension/8261/simpleweather/)
+[![GNOME Shell](https://img.shields.io/badge/GNOME_Shell-46--51-4A86CF?logo=gnome&logoColor=white)](https://extensions.gnome.org/extension/8261/simpleweather/)
 [![License](https://img.shields.io/github/license/romanlefler/SimpleWeather?label=License)](https://github.com/romanlefler/SimpleWeather/blob/development/LICENSE)
 [![Languages](https://img.shields.io/github/directory-file-count/romanlefler/SimpleWeather/po?type=file&extension=po&label=Languages)](https://github.com/romanlefler/SimpleWeather/tree/development/po)
 
@@ -67,7 +67,7 @@ For development or manual installation, see [Building from Source](docs/building
 
 ## Compatibility
 
-SimpleWeather supports GNOME Shell versions 46, 48, 49, 50, and 51.
+SimpleWeather supports GNOME Shell versions 46-51.
 
 ## Translations
 

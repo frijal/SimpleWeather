@@ -1,4 +1,15 @@
 
+# v51.0.2
+
+## Features
+
+- GNOME 47 support
+
+## Bug Fixes
+
+- Fix crash on GNOME 51
+- Fix pointer cursor showing up as a resize cursor on GNOME 46
+
 # v51.0.1
 
 ## Bug Fixes
