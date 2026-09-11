@@ -1,4 +1,68 @@
 
+# v51.0.2
+
+## Features
+
+- GNOME 47 support
+
+## Bug Fixes
+
+- Fix crash on GNOME 51
+- Fix pointer cursor showing up as a resize cursor on GNOME 46
+
+# v51.0.1
+
+## Bug Fixes
+
+- Fix Preferences menu crash on GNOME 46
+- Fix crash that could happen on specific builds where npm test was run without Make first
+
+# v51.0.0
+
+## Features
+
+- LAYOUTS: Choose between the Default or Classic layout.
+- CLASSIC LAYOUT: This layout mimics the OpenWeather Refined pop-up menu.
+- FLEXIBLE DETAILS: Choose any number of details to show, or show none. Available for both layouts.
+- New QWeather weather provider (account required; thanks chenxv399)
+- Option to choose Nominatim, Open-Meteo, or QWeather as the location search provider
+- New ip.sb provider for My Location
+
+## Improvements
+
+- Some widgets that may not have been freed before are now always freed on disable
+- First-time run auto-configuration is now more performant
+- Showing the countdown instead of time for the sunset/sunrise is now the default
+- Every forecast column is now the same size so flipping forecasts does not change size
+- Some settings have been rearranged in the menus
+- Custom themes now have background box colors so they look more like the System theme
+- Auto-config falls back to locale if it cannot connect to the location service
+- ip.sb is now the default My Location provider
+- Weather provider settings now explain each option and only show relevant credential fields
+- QWeather credentials can be validated from settings
+- Weather and location search attributions now link to provider websites
+- Copied settings JSON no longer includes API keys or API hosts
+- First-time setup in mainland China now selects a location search provider that is available there
+
+## Bug Fixes
+
+- Fixed stale resolver errors on system boot showing in pop-up
+- Forecast now can cycle through all 3 pages instead of just 2
+- Details are now arranged in a grid and are aligned by columns
+- Fixed some weird spacing in custom themes
+- The left box in the pop-up is no longer a modal dialog which on some GNOME themes looked odd
+- Fixed Open-Meteo reporting absolute pressure instead of relative pressure
+- Fixed locations at latitude 0 not being saved correctly
+
+## Translations
+
+- Chinese (thanks CreateCN)
+- German (thanks Anexity)
+- Hungarian (thanks SzAti69)
+- Japanese (thanks hidenosuke)
+- Portugese (thanks althaser)
+- Russian (thanks Valetss)
+
 # v50.1.0
 
 ## Features
@@ -180,4 +244,3 @@
 
 - German (thanks Ahmet Ala)
 - Turkish (thanks Ahmet Ala)
-

@@ -23,6 +23,7 @@ import St from 'gi://St';
 import { gettext as _g } from "./gettext.js"
 import { ModalDialog } from "resource:///org/gnome/shell/ui/modalDialog.js";
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { boxOrientation } from "./clutterutils.js";
 
 function paragraph(text : string, ...formatArgs : string[]) : St.Label {
     const label = new St.Label({
@@ -62,7 +63,7 @@ class WelcomeDialog extends ModalDialog {
         this.contentLayout.add_child(titleLabel);
 
         const box = new St.BoxLayout({
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             style_class: "dialog-content",
             x_expand: true,
             y_expand: true,
@@ -88,7 +89,7 @@ class WelcomeDialog extends ModalDialog {
         box.add_child(spacer);
 
         const buttonBox = new St.BoxLayout({
-            vertical: false,
+            ...boxOrientation(Clutter.Orientation.HORIZONTAL),
             x_expand: true,
             y_expand: false,
             x_align: Clutter.ActorAlign.FILL,
@@ -160,7 +161,7 @@ class ManualConfigDialog extends ModalDialog {
         this.contentLayout.add_child(titleLabel);
 
         const box = new St.BoxLayout({
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             style_class: "dialog-content",
             x_expand: true,
             y_expand: true,
@@ -178,7 +179,7 @@ class ManualConfigDialog extends ModalDialog {
         box.add_child(spacer);
 
         const buttonBox = new St.BoxLayout({
-            vertical: false,
+            ...boxOrientation(Clutter.Orientation.HORIZONTAL),
             x_expand: true,
             y_expand: false,
             x_align: Clutter.ActorAlign.FILL,
@@ -214,4 +215,3 @@ export async function showManualConfig(openPrefs : () => void) : Promise<void> {
     const dialog = new ManualConfigDialog();
     return dialog.choose().then(() => openPrefs());
 }
-

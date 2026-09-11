@@ -18,6 +18,7 @@
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
+import { boxOrientation } from "./clutterutils.js";
 import { theme } from "./theme.js";
 
 export class CarouselBox extends St.BoxLayout {
@@ -39,7 +40,7 @@ export class CarouselBox extends St.BoxLayout {
             x_expand: true,
             y_expand: false,
             ...a,
-            vertical: true,
+            ...boxOrientation(Clutter.Orientation.VERTICAL),
             reactive: true,
             style_class: (a.style_class ?? "") + " sw-carousel"
         })
@@ -57,10 +58,17 @@ export class CarouselBox extends St.BoxLayout {
         this.#dots = new Array(pageCount);
 
         for(let i = 0; i < pageCount; i++) {
-            const dot = new St.Widget({ style_class: "sw-carousel-dot" });
+            const dot = new St.Widget({
+                x_align: Clutter.ActorAlign.CENTER,
+                style_class: "sw-carousel-dot"
+            });
+            const slot = new St.Bin({
+                child: dot,
+                style_class: "sw-carousel-dot-slot"
+            });
             theme(dot, "carousel-dot");
             this.#dots[i] = dot;
-            this.#indicRow.add_child(dot);
+            this.#indicRow.add_child(slot);
         }
         this.add_child(this.#indicRow);
         this.#updateDots();
@@ -96,4 +104,3 @@ export class CarouselBox extends St.BoxLayout {
     get page() : number { return this.#page; }
     get pageCount() : number { return this.#pageCount; }
 }
-

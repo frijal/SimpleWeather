@@ -16,7 +16,6 @@
 */
 
 import Clutter from "gi://Clutter";
-import Cogl from "gi://Cogl";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import St from 'gi://St';
@@ -24,12 +23,11 @@ import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { createProvider, Provider } from "./providers/provider.js";
-import { OpenMeteo } from "./providers/openmeteo.js";
 import { LibSoup } from "./libsoup.js";
 import { Config } from "./config.js";
 import { Weather } from "./weather.js";
-import { delayTask, removeSourceIfTruthy, isNoInternet } from "./utils.js";
-import { displayTemp, displayTime, initLocales } from "./lang.js";
+import { delayTask, isNoInternet } from "./utils.js";
+import { displayTime, initLocales } from "./lang.js";
 import { freeMyLocation, setUpMyLocation } from "./myLocation.js";
 import { setUpGettext, gettext as _g } from "./gettext.js";
 import { gettext as shellGettext } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -39,7 +37,9 @@ import { showWelcome, showManualConfig } from "./welcome.js";
 import { setFirstTimeConfig } from "./autoConfig.js";
 import { displayDetail } from "./details.js";
 import { theme, themeInitAll, themeRemoveAll } from "./theme.js";
+import { getWeatherGIcon } from "./icons.js";
 import { AutoConfigFailError, FriendlyError } from "./errors.js";
+import { boxOrientation } from "./clutterutils.js";
 
 const FAIL_RETRIES : number = 10;
 
@@ -157,9 +157,7 @@ export default class SimpleWeatherExtension extends Extension {
             refreshWeather: this.#updateWeatherAsync.bind(this)
         });
 
-        const layout = new St.BoxLayout({
-            vertical: false
-        });
+        const layout = new St.BoxLayout(boxOrientation(Clutter.Orientation.HORIZONTAL));
 
         const hasDetail1 = this.#config!.getPanelDetail() != null;
         const hasDetail2 = this.#config!.getSecondaryPanelDetail() !== null;
@@ -238,8 +236,10 @@ export default class SimpleWeatherExtension extends Extension {
         // Some settings just require a GUI update
         this.#config!.onAnyUnitChanged(this.#updateGui.bind(this));
         this.#config!.onDetailsListChanged(this.#updateGui.bind(this));
+        this.#config!.onClassicDetailsListChanged(this.#updateGui.bind(this));
         this.#config!.onSymbolicIconsChanged(this.#updateGui.bind(this));
         this.#config!.onAlwaysPackagedIconsChanged(this.#updateGui.bind(this));
+        this.#config!.onPopupLayoutChanged(layout => this.#popup?.setLayout(layout));
         // Some require extra stuff
         this.#config!.onShowSunTimeChanged(b => {
             if(!this.#indicator) return;
@@ -261,6 +261,7 @@ export default class SimpleWeatherExtension extends Extension {
         this.#config!.onPanelOffsetChanged(this.#rebuildIndicator.bind(this));
         this.#config!.onThemeChanged(this.#rebuildIndicator.bind(this));
         this.#config!.onHighContrastChanged(this.#rebuildIndicator.bind(this));
+        this.#config!.onHighlightDetailValuesChanged(this.#rebuildIndicator.bind(this));
         this.#config!.onShowRefreshButtonChanged(this.#rebuildIndicator.bind(this));
 
         // GNOME Settings
@@ -283,11 +284,12 @@ export default class SimpleWeatherExtension extends Extension {
      * garbage-collected.
      */
     disable() {
-        // removeSourceIfTruthy is a shorthand for removing source
-        // if it is defined then returning undefined
-        this.#fetchLoopId = removeSourceIfTruthy(this.#fetchLoopId);
-        this.#delayFetchId = removeSourceIfTruthy(this.#delayFetchId);
-        this.#waitLayoutId = removeSourceIfTruthy(this.#waitLayoutId);
+        if(this.#fetchLoopId) GLib.source_remove(this.#fetchLoopId);
+        this.#fetchLoopId = undefined;
+        if(this.#delayFetchId) GLib.source_remove(this.#delayFetchId);
+        this.#delayFetchId = undefined;
+        if(this.#waitLayoutId) GLib.source_remove(this.#waitLayoutId);
+        this.#waitLayoutId = undefined;
 
         if(this.#popup && this.#indicator) {
             this.#popup.destroy(this.#indicator.menu as PopupMenu);
@@ -374,7 +376,10 @@ export default class SimpleWeatherExtension extends Extension {
                 if(errStr.length > 25) errStr = errStr.substring(0, 25) + "...";
             }
 
-            if(!this.#cachedWeather) await this.#handleErr(err);
+            if(!this.#cachedWeather) {
+                await this.#handleErr(err);
+                if(this.#cachedWeather) errStr = null;
+            }
         }
         if(this.#popup) this.#popup.setError(errStr);
         else console.error(`No popup to notify of error (${errStr})`);
@@ -406,8 +411,10 @@ export default class SimpleWeatherExtension extends Extension {
             }
 
             if(this.#panelIcon) {
-                const suffix = this.#config!.getSymbolicIcons() ? "-symbolic" : "";
-                this.#panelIcon.icon_name = w.gIconName + suffix;
+                this.#panelIcon.gicon = getWeatherGIcon(w.gIconName, this.metadata.path, {
+                    symbolic: this.#config!.getSymbolicIcons(),
+                    packaged: this.#config!.getAlwaysPackagedIcons()
+                });
             }
 
             const showSunset = w.sunset < w.sunrise;

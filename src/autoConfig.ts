@@ -17,14 +17,23 @@
 
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
-import { UnitPreset, writeGTypeAS } from "./config.js";
-import { getMyLocation } from "./myLocation.js";
+import { UnitPreset, writeGTypeAS, SearchProvider } from "./config.js";
+import { getMyLocation, MyLocResult } from "./myLocation.js";
 import { Location } from "./location.js";
 import { gettext as _g } from "./gettext.js"
-import { AutoConfigFailError } from "./errors.js";
+import { getLocales, getCountryCode } from "./lang.js"
+import { AutoConfigFailError } from "./errors.js"
 
 // Denmark, Finland, Sweden, Norway, Iceland, Faroe Islands, Greenland
 const NORDIC : string[] = [ "DK", "FI", "SE", "NO", "IS", "FO", "GL" ];
+
+// If we have to just guess a city based off of locale here's gonna be our defaults
+const US_COORDS : MyLocResult = { lat: 40.7834, lon: -73.9662, city: "New York", country: "US" };
+const UK_COORDS : MyLocResult = { lat: 51.51279, lon: -0.09184, city: "London", country: "UK" };
+const NORDIC_COORDS : MyLocResult = { lat: 59.3326, lon: 18.0649, city: "Stockholm", country: "Sverige" };
+const METRIC_COORDS : MyLocResult = { lat: 52.52001, lon: 13.40495, city: "Berlin", country: "Deutschland" };
+// Beijing, China:
+const CHINA_COORDS: MyLocResult = { lat: 39.9042, lon: 116.4074, city: "\u5317\u4eac", country: "\u4e2d\u56fd" };
 
 async function readFileAsync(path : string) : Promise<string | null> {
 
@@ -67,33 +76,54 @@ async function isDesktop() : Promise<boolean> {
  */
 export async function setFirstTimeConfig(settings : Gio.Settings) {
 
-    let myLoc;
+    let myLoc : MyLocResult | null = null;
+    let cc : string | null = null;
     try {
         myLoc = await getMyLocation();
+        cc = myLoc.country;
+        if(cc === "UK") cc = "GB";
     } catch(e) {
-        console.log("Caught get my location error in autoconfig.");
-        throw new AutoConfigFailError();
+        console.log("SimpleWeather caught get my location error in autoconfig.");
+        // Otherwise let's guess country based on locale
+        // Basically we hope we see a locale like en_US and extract the country code
+        const locales = getLocales();
+        if(!locales) throw new AutoConfigFailError();
+        for(let l of locales) {
+            cc = getCountryCode(l);
+            if(cc) break;
+        }
+        if(!cc) throw new AutoConfigFailError();
+    }
+
+    if(cc === "US") {
+        settings.set_enum("unit-preset", UnitPreset.US);
+        if(!myLoc) myLoc = US_COORDS;
+    }
+    else if(cc === "GB") {
+        settings.set_enum("unit-preset", UnitPreset.UK);
+        if(!myLoc) myLoc = UK_COORDS;
+    }
+    else if(cc && NORDIC.includes(cc)) {
+        settings.set_enum("unit-preset", UnitPreset.Nordic);
+        if(!myLoc) myLoc = NORDIC_COORDS;
+    }
+    else if(cc === "CN") {
+        // Nominatim/OpenStreetMap are blocked by China's GFW
+        // Note that Hong Kong and Taiwan are not subject to the GFW
+        settings.set_enum("unit-preset", UnitPreset.Metric);
+        settings.set_enum("search-provider", SearchProvider.OpenMeteo);
+        if(!myLoc) myLoc = CHINA_COORDS;
+    }
+    else {
+        settings.set_enum("unit-preset", UnitPreset.Metric);
+        if(!myLoc) myLoc = METRIC_COORDS;
     }
 
     // If it isn't a laptop then set your location once and never query the server again
     if(await isDesktop()) {
-        const loc = Location.newCoords(myLoc.city ?? _g("My Location"), myLoc.lat, myLoc.lon);
+        const loc = Location.newCoords(myLoc.city ?? _g("Unnamed Location"), myLoc.lat, myLoc.lon);
         const strArr = [ loc.toString() ];
         settings.set_value("locations", writeGTypeAS(strArr));
-    }
-
-    const cc = myLoc.country;
-    if(cc === "US") {
-        settings.set_enum("unit-preset", UnitPreset.US);
-    }
-    else if(cc === "UK" || cc === "GB") {
-        settings.set_enum("unit-preset", UnitPreset.UK);
-    }
-    else if(cc && NORDIC.includes(cc)) {
-        settings.set_enum("unit-preset", UnitPreset.Nordic);
-    }
-    else {
-        settings.set_enum("unit-preset", UnitPreset.Metric);
     }
 
 }

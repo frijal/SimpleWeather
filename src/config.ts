@@ -31,6 +31,17 @@ export enum UnitPreset {
     Nordic = 4
 }
 
+export enum PopupLayout {
+    Default = 0,
+    Classic = 1
+}
+
+export enum SearchProvider {
+    Nominatim,
+    QWeather,
+    OpenMeteo
+}
+
 export type PanelBox = "right" | "center" | "left";
 export interface PanelPosition {
     box: PanelBox;
@@ -154,7 +165,7 @@ export class Config {
 
     getMyLocationProvider() : MyLocationProvider {
         const val = this.#settings.get_enum("my-loc-provider");
-        if(val > 2 || val < 1) return 1;
+        if(val > 5 || val < 1) return 1;
         else return val;
     }
 
@@ -184,6 +195,21 @@ export class Config {
     onWeatherProviderChanged(callback : () => void) {
         const id = this.#settings.connect("changed", (_, key) => {
             if(key === "weather-provider") callback();
+        });
+        this.#addId(id);
+    }
+
+    getSearchProvider() : SearchProvider {
+        const val = this.#settings.get_enum("search-provider");
+        if(val < SearchProvider.Nominatim || val > SearchProvider.OpenMeteo) {
+            return SearchProvider.Nominatim;
+        }
+        return val;
+    }
+
+    onSearchProviderChanged(callback : () => void) {
+        const id = this.#settings.connect("changed", (_, key) => {
+            if(key === "search-provider") callback();
         });
         this.#addId(id);
     }
@@ -337,21 +363,10 @@ export class Config {
     /**
      * Gets the details list.
      * Items are not sanitized and may not be in Details.
-     * If value is severely malformed a string full of
-     * "invalid" will be returned.
-     * @returns Guaranteed to be an 8 item string array.
+     * @returns Between zero and the number of available detail types.
      */
     getDetailsList() : string[] {
-        const gval = this.#settings.get_value("details-list");
-        const strarr = readGTypeAS(gval);
-        if(strarr.length !== 8) {
-            const defVal = this.#settings.get_default_value("details-list");
-            if(!defVal) return new Array(8).fill("invalid");
-            const defStrarr = readGTypeAS(defVal);
-            if(defStrarr.length !== 8) return new Array(8).fill("invalid");
-            return defStrarr;
-        }
-        else return strarr;
+        return this.getFeaturedDetailsList(PopupLayout.Default);
     }
 
     onDetailsListChanged(callback : () => void) : void {
@@ -361,6 +376,48 @@ export class Config {
             }
         });
         this.#addId(id);
+    }
+
+    /**
+     * Gets the details shown by the Classic layout.
+     * Items are not sanitized and may not be in Details.
+     * @returns Between zero and the number of available detail types.
+     */
+    getClassicDetailsList() : string[] {
+        return this.getFeaturedDetailsList(PopupLayout.Classic);
+    }
+
+    onClassicDetailsListChanged(callback : () => void) : void {
+        const id = this.#settings.connect("changed", (_, key) => {
+            if(key === "classic-details-list") callback();
+        });
+        this.#addId(id);
+    }
+
+    getHighlightDetailValues() : boolean {
+        return this.#settings.get_boolean("highlight-detail-values");
+    }
+
+    onHighlightDetailValuesChanged(callback : () => void) : void {
+        const id = this.#settings.connect("changed", (_, key) => {
+            if(key === "highlight-detail-values") callback();
+        });
+        this.#addId(id);
+    }
+
+    /**
+     * Gets the variable-length details selection edited in preferences.
+     * An empty list is valid; a list cannot exceed the number of detail types.
+     */
+    getFeaturedDetailsList(layout : PopupLayout) : string[] {
+        const key = layout === PopupLayout.Classic
+            ? "classic-details-list"
+            : "details-list";
+        const details = readGTypeAS(this.#settings.get_value(key));
+        if(details.length <= Object.values(Details).length) return details;
+
+        const defaultValue = this.#settings.get_default_value(key);
+        return defaultValue ? readGTypeAS(defaultValue) : [];
     }
 
     getPanelPosition() : PanelPosition {
@@ -452,6 +509,21 @@ export class Config {
         this.#addId(id);
     }
 
+    getPopupLayout() : PopupLayout {
+        const layout = this.#settings.get_enum("popup-layout");
+        if(layout < PopupLayout.Default || layout > PopupLayout.Classic) {
+            return PopupLayout.Default;
+        }
+        return layout;
+    }
+
+    onPopupLayoutChanged(callback : (layout : PopupLayout) => void) : void {
+        const id = this.#settings.connect("changed", (_, key) => {
+            if(key === "popup-layout") callback(this.getPopupLayout());
+        });
+        this.#addId(id);
+    }
+
     /**
      * Gets the API keys map. The key is the index of the provider and the value is the API key.
      * The map will not be NULL or undefined, but each provider is not guaranteed to be present.
@@ -464,6 +536,22 @@ export class Config {
     onApiKeysChanged(callback : () => void) : void {
         const id = this.#settings.connect("changed", (_, key) => {
             if(key === "api-keys") callback();
+        });
+        this.#addId(id);
+    }
+
+    /**
+     * Gets the API hosts map. The key is the name of the provider and the value is the API host.
+     * The map will not be NULL or undefined, but each provider is not guaranteed to be present.
+     */
+    getApiHosts() : Map<string, string> {
+        const gval = this.#settings.get_value("api-hosts");
+        return readGTypeABSS(gval);
+    }
+
+    onApiHostsChanged(callback : () => void) : void {
+        const id = this.#settings.connect("changed", (_, key) => {
+            if(key === "api-hosts") callback();
         });
         this.#addId(id);
     }
@@ -596,4 +684,3 @@ export function writeGTypeABSS(map : Map<string, string>) : GLib.Variant<any>
         gVariantEntries
     );
 }
-

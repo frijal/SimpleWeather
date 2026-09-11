@@ -111,7 +111,7 @@ export class Location {
             name: this.#name
         };
         if(this.#isHere) obj.isHere = true;
-        if(this.#lat) {
+        if(this.#lat !== undefined) {
             obj.lat = this.#lat;
             obj.lon = this.#lon;
         }
@@ -155,7 +155,7 @@ export class Location {
             obj.isHere,
             obj.lat,
             obj.lon,
-            { omModel: obj.omModel, countryCode: obj.cc }
+            { omModel: obj.omm, countryCode: obj.cc }
         );
     }
 
