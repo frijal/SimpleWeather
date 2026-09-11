@@ -32,11 +32,13 @@ export function setPointer(widget : Clutter.Actor) : void {
         // @ts-ignore GNOME 50
         widget.set_cursor_type(Clutter.CursorType.POINTER);
     } else if(global?.display?.set_cursor) {
+        // GNOME 46/47 use POINTING_HAND; GNOME 48 renamed and reordered the enum.
+        const cursor = Meta.Cursor as typeof Meta.Cursor & { POINTING_HAND: Meta.Cursor };
         widget.connect("enter-event", () => {
-            global.display.set_cursor(Meta.Cursor?.POINTER ?? 5);
+            global.display.set_cursor(cursor.POINTER ?? cursor.POINTING_HAND);
         });
         widget.connect("leave-event", () => {
-            global.display.set_cursor(Meta.Cursor?.DEFAULT ?? 2);
+            global.display.set_cursor(cursor.DEFAULT);
         });
     }
 }
